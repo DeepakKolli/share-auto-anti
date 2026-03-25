@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Auto | Driver Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .app-container {
+            max-width: 414px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: var(--bg-darker);
+            position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            color: var(--text-light);
+        }
+
+        .driver-header {
+            padding: 1.5rem;
+            background: rgba(2, 6, 23, 0.95);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .driver-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .driver-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        /* Toggle Switch */
+        .online-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-card);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .toggle-switch-input { display: none; }
+        .toggle-switch-label {
+            width: 40px;
+            height: 22px;
+            background: var(--text-muted);
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch-label::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch-input:checked + .toggle-switch-label {
+            background: var(--accent-green);
+        }
+
+        .toggle-switch-input:checked + .toggle-switch-label::after {
+            transform: translateX(18px);
+        }
+
+        .status-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .toggle-switch-input:checked ~ .status-text {
+            color: var(--accent-green);
+        }
+
+        /* Dashboard content */
+        .dashboard { padding: 1.5rem; flex: 1; display: flex; flex-direction: column; gap: 1.5rem; }
+
+        .earnings-card {
+            background: linear-gradient(135deg, var(--bg-card), rgba(30, 41, 59, 0.5));
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .earnings-card::after {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: var(--primary);
+            filter: blur(80px);
+            opacity: 0.1;
+            border-radius: 50%;
+        }
+
+        .earnings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .stat-box { text-align: center; }
+
+        /* Current Route Segment */
+        .route-card {
+            background: var(--bg-card);
+            border: 1px solid var(--primary-10);
+            border-radius: 16px;
+            padding: 1.25rem;
+        }
+
+        .route-path {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            position: relative;
+            padding-left: 2rem;
+            margin-top: 1rem;
+        }
+
+        .route-path::before {
+            content: '';
+            position: absolute;
+            left: 0.55rem;
+            top: 0.5rem;
+            bottom: 0.5rem;
+            width: 2px;
+            background: dashed rgba(255,255,255,0.2) 2px;
+            background-size: 2px 6px;
+        }
+
+        .route-node { position: relative; font-weight: 500; font-size: 0.95rem; }
+        
+        .route-node::before {
+            content: '';
+            position: absolute;
+            left: -1.95rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--bg-dark);
+            border: 3px solid var(--primary);
+        }
+
+        .route-node.destination::before { border-color: var(--accent-green); }
+
+        /* Pool Status */
+        .pool-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            padding: 1rem;
+        }
+
+        .passenger-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .passenger-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.2);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .passenger-item.new {
+            border-color: var(--primary);
+            background: rgba(255, 209, 0, 0.05);
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .p-info { display: flex; align-items: center; gap: 0.75rem; }
+        .p-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .p-status {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .p-status.ready { background: rgba(16, 185, 129, 0.2); color: #4ade80; }
+
+        .start-btn {
+            background: var(--bg-card);
+            color: var(--text-muted);
+            border: 1px solid var(--glass-border);
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 700;
+            text-align: center;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .start-btn.ready {
+            background: var(--primary);
+            color: var(--bg-darker);
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(255, 209, 0, 0.3);
+        }
+
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            background: var(--bg-card);
+            padding: 1rem 0;
+            border-top: 1px solid var(--glass-border);
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-decoration: none;
+        }
+
+        .nav-item.active { color: var(--primary); }
+        .nav-item i { font-size: 1.25rem; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="driver-header">
+            <div class="driver-info">
+                <a href="index.html" class="text-light" style="margin-right:0.5rem;"><i class="fa-solid fa-arrow-left"></i></a>
+                <div class="driver-avatar"><i class="fa-solid fa-user-tie"></i></div>
+                <div>
+                    <div class="font-bold text-sm">Ramesh K.</div>
+                    <div class="text-xs text-primary font-semibold">AP31 TT 1234</div>
+                </div>
+            </div>
+            <div class="online-toggle">
+                <input type="checkbox" id="statusToggle" class="toggle-switch-input" checked>
+                <label for="statusToggle" class="toggle-switch-label"></label>
+                <span class="status-text">Online</span>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <!-- Earnings Summary -->
+            <div class="earnings-card">
+                <h3 class="text-xs text-muted mb-1 font-semibold uppercase tracking-wider">Today's Earnings</h3>
+                <div class="font-bold text-3xl">₹<span id="total-earnings">840</span></div>
+                
+                <div class="earnings-row">
+                    <div class="stat-box">
+                        <div class="text-lg font-bold">12</div>
+                        <div class="text-xs text-muted">Trips</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="text-lg font-bold">4.9 <i class="fa-solid fa-star text-primary text-sm"></i></div>
+                        <div class="text-xs text-muted">Rating</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="text-lg font-bold">5h 20m</div>
+                        <div class="text-xs text-muted">Online</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Assigned Route -->
+            <div class="route-card">
+                <div class="flex justify-between items-center border-b border-white/10 pb-3">
+                    <h3 class="font-semibold text-sm">Assigned Route</h3>
+                    <span class="text-xs bg-primary-10 text-primary px-2 py-1 rounded">High Demand</span>
+                </div>
+                <div class="route-path">
+                    <div class="route-node">RTC Complex</div>
+                    <div class="route-node destination">MVP Colony</div>
+                </div>
+            </div>
+
+            <!-- Pool Status -->
+            <div class="pool-section" id="poolSection">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-semibold text-sm">Live Pool Status</h3>
+                    <span class="font-bold text-sm bg-gray-800 px-2 py-1 rounded"><span id="seatsFilled">2</span>/4 Seats</span>
+                </div>
+                
+                <div class="passenger-list" id="passengerList">
+                    <!-- Passengers generated by JS -->
+                    <div class="passenger-item">
+                        <div class="p-info">
+                            <div class="p-avatar"><i class="fa-regular fa-user"></i></div>
+                            <div>
+                                <div class="font-semibold text-sm">Suresh +1</div>
+                                <div class="text-xs text-muted">Pick: RTC Complex</div>
+                            </div>
+                        </div>
+                        <div class="p-status ready">Waiting</div>
+                    </div>
+                </div>
+
+                <div class="text-center text-xs text-muted mt-3" id="waitingMsg">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> Waiting for 2 more passengers...
+                </div>
+
+                <button class="start-btn w-full" id="startBtn" disabled>
+                    Start Trip
+                </button>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <a href="#" class="nav-item active"><i class="fa-solid fa-compass"></i> Home</a>
+            <a href="#" class="nav-item"><i class="fa-solid fa-wallet"></i> Wallet</a>
+            <a href="#" class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
+            <a href="#" class="nav-item"><i class="fa-solid fa-gear"></i> Settings</a>
+        </div>
+    </div>
+
+    <script src="js/driver-app.js"></script>
+</body>
+</html>

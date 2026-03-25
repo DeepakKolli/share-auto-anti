@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Auto | Smart Route-Based Pooling</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-truck-fast"></i> Share<span>Auto</span>
+        </div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#how-it-works">How it Works</a>
+        </div>
+        <div class="nav-actions">
+            <a href="user-app.html" class="btn btn-outline">Rider App (Demo)</a>
+            <a href="driver-app.html" class="btn btn-primary">Driver Panel (Demo)</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <div class="badge">Hyper-local • Route-based</div>
+            <h1>The New Era of <br><span class="text-gradient">Smart Auto Pooling</span></h1>
+            <p>Convert informal shared rides into a structured, efficient, and predictable system. Reduce costs, increase driver earnings, and eliminate inefficiencies in urban transport.</p>
+            <div class="hero-actions">
+                <a href="user-app.html" class="btn btn-primary btn-lg">Book a Seat <i class="fa-solid fa-arrow-right"></i></a>
+                <a href="#features" class="btn btn-secondary btn-lg">Explore Features</a>
+            </div>
+            <div class="stats-row">
+                <div class="stat">
+                    <span class="stat-num">₹30</span>
+                    <span class="stat-label">Starting Fare</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-num">4x</span>
+                    <span class="stat-label">Driver Earnings</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-num">Live</span>
+                    <span class="stat-label">Pool Matching</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="phone-mockup">
+                <div class="screen">
+                    <div class="demo-header">
+                        <h4>Search Route</h4>
+                    </div>
+                    <div class="glass p-4 rounded-xl mt-4">
+                        <div class="route-input">
+                            <i class="fa-solid fa-location-dot text-blue"></i>
+                            <input type="text" value="RTC Complex" readonly>
+                        </div>
+                        <div class="route-line"></div>
+                        <div class="route-input">
+                            <i class="fa-solid fa-location-arrow text-primary"></i>
+                            <input type="text" value="MVP Colony" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Visualization of the pool -->
+                    <div class="live-pool-demo glass p-4 rounded-xl mt-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-semibold text-sm">Pool Status</h4>
+                            <span class="text-xs bg-primary-10 text-primary px-2 py-1 rounded">2/4 Filled</span>
+                        </div>
+                        
+                        <div class="pool-avatars mb-4">
+                            <div class="avatar filled"><i class="fa-solid fa-user"></i></div>
+                            <div class="avatar filled"><i class="fa-solid fa-user"></i></div>
+                            <div class="avatar empty animate-pulse"><i class="fa-solid fa-user-plus"></i></div>
+                            <div class="avatar empty animate-pulse"><i class="fa-solid fa-user-plus"></i></div>
+                        </div>
+                        <p class="status-text text-center text-green-400 text-sm font-medium">Filling fast! Auto arriving in 3 mins.</p>
+                        
+                        <div class="pricing-toggle-demo mt-4">
+                            <button class="active">
+                                <span class="font-semibold">Wait & Save</span>
+                                <span class="text-xs block">₹30 (ETA: 5m)</span>
+                            </button>
+                            <button>
+                                <span class="font-semibold">Instant Ride</span>
+                                <span class="text-xs block">₹50 (ETA: 1m)</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="blob"></div>
+        </div>
+    </header>
+
+    <section id="features" class="features">
+        <div class="section-header">
+            <h2>Why Choose Share Auto?</h2>
+            <p>Our dynamic mini-bus model ensures maximum utilization and earnings.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card glass">
+                <div class="icon-wrapper"><i class="fa-solid fa-route"></i></div>
+                <h3>Fixed Routes</h3>
+                <p>No route confusion. Select from high-demand predefined routes for predictable and fast rides.</p>
+            </div>
+            <div class="feature-card glass">
+                <div class="icon-wrapper"><i class="fa-solid fa-chair"></i></div>
+                <h3>Seat-Based Booking</h3>
+                <p>Book exactly the number of seats you need, maximizing auto utilization and reducing your cost.</p>
+            </div>
+            <div class="feature-card glass">
+                <div class="icon-wrapper"><i class="fa-solid fa-piggy-bank"></i></div>
+                <h3>Wait & Save</h3>
+                <p>Our innovative pricing lets you pay significantly less if you wait for others to join the pool.</p>
+            </div>
+            <div class="feature-card glass">
+                <div class="icon-wrapper"><i class="fa-solid fa-bolt"></i></div>
+                <h3>Live Pool Formation</h3>
+                <p>Watch the auto fill up in real-time. System assigns a driver automatically when capacity is reached.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+</body>
+</html>
