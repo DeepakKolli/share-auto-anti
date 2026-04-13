@@ -1,9 +1,12 @@
 {
-  "name": "module1-ride-pooling",
+  "name": "module2-route-management",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Route Management & Auto Assignment module for Share Auto",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
+    "seed": "node seed.js",
+    "simulate": "node simulate.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

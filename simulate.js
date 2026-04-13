@@ -1,63 +1,90 @@
 const mongoose = require('mongoose');
-const poolService = require('./services/poolService');
-const Pool = require('./models/Pool');
-const expiryJob = require('./cron/expiryJob');
+const Route = require('./models/Route');
+const Stop = require('./models/Stop');
+const AutoAssignment = require('./models/AutoAssignment');
+
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/share_auto_prototype';
 
 async function runSimulation() {
-    console.log("=== STARTING RIDE POOLING ENGINE SIMULATION ===");
-    
-    // Connect and wipe
-    await mongoose.connect('mongodb://127.0.0.1:27017/share_auto_prototype');
-    await Pool.deleteMany({}); 
-    console.log("[Setup] Database Cleaned.");
+    console.log("=== STARTING MODULE 2: ROUTE MANAGEMENT SIMULATION ===\n");
 
-    // Reference Time
-    const commonTime = new Date();
-    commonTime.setMinutes(commonTime.getMinutes() + 20); // departing in 20 mins
+    await mongoose.connect(MONGODB_URI);
+    console.log("[Setup] Connected to MongoDB\n");
 
-    console.log("\n--- SCENARIO 1: First Rider (Creates Pool) ---");
-    const req1 = await poolService.requestRide({
-        userId: "UserA", routeId: "MVP_COLONY_TO_RK_BEACH", departureTimeStr: commonTime.toISOString(), seats: 1
-    });
-    console.log(`[Result] Pool ID: ${req1.pool._id} | Status: ${req1.pool.status} | Available: ${req1.pool.availableSeats}`);
+    // ─── SCENARIO 1: Fetch All Routes ───────────────────────
+    console.log("--- SCENARIO 1: Fetch All Active Routes ---");
+    const routes = await Route.find({ isActive: true }).sort('routeName');
+    console.log(`[Result] Found ${routes.length} active routes:`);
+    routes.forEach(r => console.log(`   • ${r.routeId} → ${r.routeName} (${r.distanceKm} km)`));
 
-    console.log("\n--- SCENARIO 2: Second Rider (Triggers Driver) ---");
-    const req2 = await poolService.requestRide({
-        userId: "UserB", routeId: "MVP_COLONY_TO_RK_BEACH", departureTimeStr: commonTime.toISOString(), seats: 1
-    });
-    console.log(`[Result] Pool ID: ${req2.pool._id} | Status: ${req2.pool.status} | Available: ${req2.pool.availableSeats}`);
+    // ─── SCENARIO 2: Get Stops For a Route ──────────────────
+    console.log("\n--- SCENARIO 2: Get Ordered Stops for 'RT-NAD-GAJ' ---");
+    const nadStops = await Stop.find({ routeId: 'RT-NAD-GAJ' }).sort('sequenceNumber');
+    console.log(`[Result] ${nadStops.length} stops:`);
+    nadStops.forEach(s => console.log(`   ${s.sequenceNumber}. ${s.stopName} (${s.stopId}) — ${s.distanceKm}km`));
 
-    console.log("\n--- SCENARIO 3: Third Rider (Fills Pool) ---");
-    const req3 = await poolService.requestRide({
-        userId: "UserC", routeId: "MVP_COLONY_TO_RK_BEACH", departureTimeStr: commonTime.toISOString(), seats: 1
-    });
-    console.log(`[Result] Pool ID: ${req3.pool._id} | Status: ${req3.pool.status} | Available: ${req3.pool.availableSeats}`);
+    // ─── SCENARIO 3: Validate Stop Order (UP Direction) ─────
+    console.log("\n--- SCENARIO 3: Validate Stop Order (UP — BHPV → Gajuwaka) ---");
+    const origin = await Stop.findOne({ stopId: 'ST-NAD-02' }); // BHPV (seq 2)
+    const dest = await Stop.findOne({ stopId: 'ST-NAD-04' });   // Gajuwaka (seq 4)
+    const upValid = origin.sequenceNumber < dest.sequenceNumber;
+    console.log(`[Result] Origin: ${origin.stopName} (seq ${origin.sequenceNumber})`);
+    console.log(`         Dest:   ${dest.stopName} (seq ${dest.sequenceNumber})`);
+    console.log(`         Direction: UP → Valid: ${upValid ? '✅ YES' : '❌ NO'}`);
 
-    console.log("\n--- SCENARIO 4: Overflow Rider (Creates New Pool) ---");
-    const req4 = await poolService.requestRide({
-        userId: "UserD", routeId: "MVP_COLONY_TO_RK_BEACH", departureTimeStr: commonTime.toISOString(), seats: 1
-    });
-    console.log(`[Result] Pool ID: ${req4.pool._id} | Status: ${req4.pool.status} | Available: ${req4.pool.availableSeats}`);
+    // ─── SCENARIO 4: Validate Stop Order (DOWN Direction) ───
+    console.log("\n--- SCENARIO 4: Validate Stop Order (DOWN — Gajuwaka → BHPV) ---");
+    const downValid = dest.sequenceNumber > origin.sequenceNumber;
+    console.log(`[Result] Origin: ${dest.stopName} (seq ${dest.sequenceNumber})`);
+    console.log(`         Dest:   ${origin.stopName} (seq ${origin.sequenceNumber})`);
+    console.log(`         Direction: DOWN → Valid: ${downValid ? '✅ YES' : '❌ NO'}`);
 
-    console.log("\n--- SCENARIO 5: Expiry ChronJob Check (Truncates & Dispatches) ---");
-    // Backdate the new pool to force the 15-minute expiry rule
-    await Pool.updateOne({ _id: req4.pool._id }, { $set: { createdAt: new Date(Date.now() - 20 * 60000) } });
-    await expiryJob.checkExpiries(); // manual invoke
-    
-    const checkExpiredPool = await Pool.findById(req4.pool._id);
-    console.log(`[Result] Expired Pool Status changed to: ${checkExpiredPool.status}`);
+    // ─── SCENARIO 5: Duplicate Route Prevention ─────────────
+    console.log("\n--- SCENARIO 5: Prevent Duplicate Route ---");
+    try {
+        const duplicate = new Route({ routeId: 'RT-NAD-GAJ', routeName: 'Duplicate Test' });
+        await duplicate.save();
+        console.log("[Result] ❌ Duplicate was allowed (unexpected!)");
+    } catch (err) {
+        console.log(`[Result] ✅ Duplicate correctly blocked: ${err.message.substring(0, 80)}...`);
+    }
 
-    // Create an empty pool and expire it to test cancellation
-    console.log("\n--- SCENARIO 6: Expire an Empty Pool ---");
-    const emptyPool = new Pool({
-        routeId: "EMPTY_ROUTE", departureTime: commonTime, status: "waiting", passengers: [],
-        createdAt: new Date(Date.now() - 20 * 60000) // 20 mins ago
-    });
-    await emptyPool.save();
-    await expiryJob.checkExpiries(); // manual invoke again
-    const finalEmptyPool = await Pool.findById(emptyPool._id);
-    console.log(`[Result] Empty Pool Status changed to: ${finalEmptyPool.status}`);
-    
+    // ─── SCENARIO 6: Query Active Autos on Route ────────────
+    console.log("\n--- SCENARIO 6: Get Active Autos on RT-NAD-GAJ ---");
+    const autos = await AutoAssignment.find({ routeId: 'RT-NAD-GAJ', status: { $ne: 'OFF_DUTY' } });
+    console.log(`[Result] ${autos.length} active autos:`);
+    autos.forEach(a => console.log(`   • ${a.driverName} (${a.autoNumber}) — ${a.direction} — Status: ${a.status}`));
+
+    // ─── SCENARIO 7: Filter by Direction ────────────────────
+    console.log("\n--- SCENARIO 7: Get Autos on RT-NAD-GAJ Direction=UP ---");
+    const upAutos = await AutoAssignment.find({ routeId: 'RT-NAD-GAJ', direction: 'UP', status: { $ne: 'OFF_DUTY' } });
+    console.log(`[Result] ${upAutos.length} UP autos:`);
+    upAutos.forEach(a => console.log(`   • ${a.driverName} (${a.autoNumber}) — Status: ${a.status}`));
+
+    // ─── SCENARIO 8: Pooling Integration Data ───────────────
+    console.log("\n--- SCENARIO 8: Build Pooling Payload (Module 1 Integration) ---");
+    console.log("[Simulating] User selects: RT-MVP-RKB, from MVP Circle to Tenneti Park, direction UP");
+    const poolOrigin = await Stop.findOne({ stopId: 'ST-MVP-01' });
+    const poolDest = await Stop.findOne({ stopId: 'ST-MVP-03' });
+    const poolingPayload = {
+        routeId: 'RT-MVP-RKB',
+        originSequence: poolOrigin.sequenceNumber,
+        destinationSequence: poolDest.sequenceNumber,
+        direction: 'UP'
+    };
+    console.log(`[Result] Payload for Module 1 Pooling Engine:`);
+    console.log(`         ${JSON.stringify(poolingPayload, null, 2)}`);
+    console.log(`         ✅ Module 1 can now match: any user where start ≥ ${poolOrigin.sequenceNumber} AND end ≤ ${poolDest.sequenceNumber}`);
+
+    // ─── SCENARIO 9: Update Auto Status ─────────────────────
+    console.log("\n--- SCENARIO 9: Update Auto Status (Raju starts route) ---");
+    const updated = await AutoAssignment.findOneAndUpdate(
+        { autoNumber: 'AP-31-AB-1234' },
+        { $set: { status: 'EN_ROUTE', currentStopIndex: 1 } },
+        { new: true }
+    );
+    console.log(`[Result] ${updated.driverName} → Status: ${updated.status}, At Stop Index: ${updated.currentStopIndex}`);
+
     console.log("\n=== SIMULATION COMPLETE ===");
     process.exit(0);
 }
