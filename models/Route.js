@@ -11,10 +11,10 @@ const routeSchema = new mongoose.Schema({
         type: String, 
         required: true 
     },
-    // Direction is NOT stored here — it's runtime-dynamic (UP / DOWN)
-    distanceKm: { 
-        type: Number, 
-        default: 0 
+    capacity: {
+        type: Number,
+        default: 3, // Standard auto capacity
+        required: true
     },
     isActive: { 
         type: Boolean, 
