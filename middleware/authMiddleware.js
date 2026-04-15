@@ -6,20 +6,20 @@ const authMiddleware = (req, res, next) => {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({
             success: false,
-            message: 'Access denied. No token provided.'
+            message: 'Access denied. No driver token provided.'
         });
     }
 
     const token = authHeader.split(' ')[1];
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
-        req.user = decoded; // Attach userId to request
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'driver_secret_key');
+        req.driverId = decoded.driverId; // Attach driverId to request
         next();
     } catch (error) {
         res.status(401).json({
             success: false,
-            message: 'Invalid or expired token.'
+            message: 'Invalid or expired driver token.'
         });
     }
 };
