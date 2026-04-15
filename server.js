@@ -1,42 +1,38 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+require('dotenv').config();
 
-// Route file imports
-const routeAdminRoutes = require('./routes/routeAdminRoutes');
-const stopRoutes = require('./routes/stopRoutes');
-const autoAssignmentRoutes = require('./routes/autoAssignmentRoutes');
+const driverRoutes = require('./routes/driverRoutes');
 
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// API Endpoint Mounts
-app.use('/api/routes', routeAdminRoutes);
-app.use('/api/stops', stopRoutes);
-app.use('/api/assignments', autoAssignmentRoutes);
+// Routes
+app.use('/api/drivers', driverRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'Module 2 Route Management is up and running!', timestamp: new Date() });
+    res.json({ 
+        success: true, 
+        module: 'Module 4: Driver Module',
+        status: 'UP (Real-time via Gateway)',
+        timestamp: new Date()
+    });
 });
 
-// MongoDB Connect (Standard local URL for test/prototype)
+// Database
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/share_auto_prototype';
-
 mongoose.connect(MONGODB_URI)
-  .then(() => {
-      console.log(`[DB] Module 2 successfully connected to MongoDB at ${MONGODB_URI}`);
-  })
-  .catch(err => {
-      console.error("[DB Error] MongoDB connection failed:", err.message);
-  });
+    .then(() => console.log(`[DB] Connected to MongoDB at ${MONGODB_URI}`))
+    .catch(err => console.error('[DB Error] Connection failed:', err));
 
-const PORT = process.env.PORT || 3002; // Runs on 3002 to stay independent of Module 1 (port 3000)
-if (require.main === module) {
-  app.listen(PORT, () => {
-      console.log(`[SERVER] Route Management Engine running on port ${PORT}.`);
-  });
-}
+const PORT = process.env.PORT || 3004;
+app.listen(PORT, () => {
+    console.log(`[SERVER] Driver Module running on port ${PORT}`);
+});
 
 module.exports = app;
