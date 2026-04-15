@@ -13,7 +13,7 @@ const routeSchema = new mongoose.Schema({
     },
     capacity: {
         type: Number,
-        default: 3, // Standard auto capacity
+        default: 3,
         required: true
     },
     isActive: { 
