@@ -1,27 +1,26 @@
 const jwt = require('jsonwebtoken');
 
-const authMiddleware = (req, res, next) => {
-    const authHeader = req.headers.authorization;
+/**
+ * Socket.io middleware for JWT authentication
+ */
+const socketAuthMiddleware = (socket, next) => {
+    const token = socket.handshake.auth.token || socket.handshake.headers['authorization'];
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({
-            success: false,
-            message: 'Access denied. No token provided.'
-        });
+    if (!token) {
+        console.error('[Socket Auth] Denied: No token provided');
+        return next(new Error('Authentication error: No token provided'));
     }
 
-    const token = authHeader.split(' ')[1];
+    const cleanToken = token.startsWith('Bearer ') ? token.slice(7) : token;
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
-        req.user = decoded;
+        const decoded = jwt.verify(cleanToken, process.env.JWT_SECRET || 'fallback_secret');
+        socket.user = decoded; // Attach user info to the socket
         next();
-    } catch (error) {
-        res.status(401).json({
-            success: false,
-            message: 'Invalid or expired token.'
-        });
+    } catch (err) {
+        console.error('[Socket Auth] Denied: Invalid token');
+        return next(new Error('Authentication error: Invalid token'));
     }
 };
 
-module.exports = authMiddleware;
+module.exports = socketAuthMiddleware;
