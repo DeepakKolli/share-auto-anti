@@ -1,42 +1,63 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const http = require('http');
+const { Server } = require('socket.io');
 const cors = require('cors');
 require('dotenv').config();
 
-const bookingRoutes = require('./routes/bookingRoutes');
+const socketAuthMiddleware = require('./middleware/authMiddleware');
+const gatewaySocket = require('./socket/gatewaySocket');
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use('/api', bookingRoutes);
+// --- Internal API: Cross-Module Notification Bridge ---
+/**
+ * POST /api/internal/emit
+ * Allows other modules to trigger socket broadcasts.
+ * Body: { room, event, data }
+ */
+app.post('/api/internal/emit', (req, res) => {
+    const { room, event, data } = req.body;
+
+    if (!room || !event || !data) {
+        return res.status(400).json({ success: false, message: 'Missing room, event, or data' });
+    }
+
+    // Broadcast to the target room
+    io.to(room).emit(event, data);
+
+    console.log(`[Gateway API] Internal emit: event "${event}" to "${room}"`);
+    res.json({ success: true, message: `Event ${event} broadcasted to ${room}` });
+});
 
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ 
         success: true, 
-        module: 'Module 5: Booking & Seat Allocation',
-        status: 'UP (Real-time via Gateway)',
+        module: 'Module 7: Real-Time Gateway',
+        status: 'UP',
         timestamp: new Date()
     });
 });
 
-// Database Connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/share_auto_prototype';
+// Socket.IO Setup
+io.use(socketAuthMiddleware); // Apply JWT authentication
+gatewaySocket(io);
 
-mongoose.connect(MONGODB_URI)
-    .then(() => console.log(`[DB] Connected to MongoDB at ${MONGODB_URI}`))
-    .catch(err => console.error('[DB Error] Connection failed:', err));
+const PORT = process.env.PORT || 3007;
 
-const PORT = process.env.PORT || 3005;
+server.listen(PORT, () => {
+    console.log(`[SERVER] Real-Time Gateway running on port ${PORT}`);
+});
 
-if (require.main === module) {
-    app.listen(PORT, () => {
-        console.log(`[SERVER] Module 5 running on port ${PORT}`);
-    });
-}
-
-module.exports = app;
+module.exports = { server, io };
