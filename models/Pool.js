@@ -1,45 +1,19 @@
 const mongoose = require('mongoose');
 
 const poolSchema = new mongoose.Schema({
-    routeId: {
-        type: String,
-        required: true,
-        index: true
-    },
-    departureTime: {
-        type: Date,
-        required: true
-    },
-    totalSeats: {
-        type: Number,
-        required: true,
-        default: 3
-    },
-    availableSeats: {
-        type: Number,
-        required: true,
-        default: 3
-    },
-    bookedSeats: {
-        type: Number,
-        required: true,
-        default: 0
-    },
+    routeId: String,
     status: {
         type: String,
-        enum: ["waiting", "partially_full", "full", "POOL_READY", "WAITING_FOR_PAYMENTS", "assigned", "completed", "cancelled"],
-        default: "waiting",
+        enum: ["waiting", "partially_full", "full", "POOL_READY", "DRIVER_ASSIGNED", "completed", "cancelled"],
         index: true
     },
-    passengers: [{
-        userId: { type: String, required: true },
-        seats: { type: Number, required: true },
-        joinedAt: { type: Date, default: Date.now }
-    }],
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
+    driverId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Driver',
+        default: null
+    },
+    totalSeats: Number,
+    bookedSeats: Number
 });
 
 module.exports = mongoose.model('Pool', poolSchema);

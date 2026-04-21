@@ -1,63 +1,23 @@
 const mongoose = require('mongoose');
 
 const driverSchema = new mongoose.Schema({
-    name: {
+    name: String,
+    phone: String,
+    status: {
         type: String,
-        required: [true, 'Driver name is required']
+        enum: ['OFFLINE', 'ONLINE_AVAILABLE', 'ON_TRIP'],
+        default: 'OFFLINE'
     },
-    phone: {
-        type: String,
-        required: [true, 'Phone number is required'],
-        unique: true,
-        trim: true
+    currentLocation: {
+        type: { type: String, default: 'Point' },
+        coordinates: [Number]
     },
-    password: {
-        type: String,
-        required: [true, 'Password is required']
-    },
-    vehicleNumber: {
-        type: String,
-        required: [true, 'Vehicle number is required'],
-        unique: true
-    },
-    vehicleType: {
-        type: String,
-        enum: ['auto', 'cab'],
-        required: true
-    },
-    licenseNumber: {
-        type: String,
-        required: [true, 'License number is required'],
-        unique: true
-    },
-    isAvailable: {
-        type: Boolean,
-        default: true
-    },
-    isOnline: {
-        type: Boolean,
-        default: false
-    },
-    currentRoute: {
-        type: String, // routeId
-        default: null
-    },
-    socketId: {
-        type: String,
-        default: null
-    },
-    earnings: {
-        totalEarnings: { type: Number, default: 0 },
-        todayEarnings: { type: Number, default: 0 }
-    },
-    assignedPools: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Pool'
-    }],
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
+    activeTrips: { type: Number, default: 0 },
+    rating: { type: Number, default: 4.5 },
+    routeIds: [String],
+    isAvailable: Boolean
 });
+
+driverSchema.index({ currentLocation: "2dsphere" });
 
 module.exports = mongoose.model('Driver', driverSchema);
