@@ -5,14 +5,12 @@ const axios = require('axios');
  */
 class InternalEmitter {
     constructor() {
+        // Default to localhost:3007 (Module 7)
         this.gatewayUrl = process.env.GATEWAY_INTERNAL_URL || 'http://localhost:3007/api/internal/emit';
     }
 
     /**
      * Emits an event to a specific room via the Gateway
-     * @param {string} room - The room name (e.g., 'pool:123' or 'route:RT-01')
-     * @param {string} event - The socket event name
-     * @param {object} data - The payload
      */
     async emit(room, event, data) {
         try {
@@ -25,23 +23,10 @@ class InternalEmitter {
         }
     }
 
-    // --- Helper shortcuts ---
-    
-    async notifyPoolUpdate(poolId, poolData) {
-        return this.emit(`pool:${poolId}`, 'pool_update', poolData);
-    }
-
-    async notifySeatUpdate(poolId, seatData) {
-        return this.emit(`pool:${poolId}`, 'seat_update', seatData);
-    }
-
-    async notifyDriverAssignment(routeId, poolData) {
-        return this.emit(`route:${routeId}`, 'driver_notification', poolData);
-    }
-
-    async notifyBookingConfirmed(userId, bookingData) {
-        // Assume user joins a private room based on their userId
-        return this.emit(`user:${userId}`, 'booking_confirmed', bookingData);
+    async notifyDriverAssigned(poolId, routeId, driverData) {
+        // Notify both pool room and route room
+        await this.emit(`pool:${poolId}`, 'driver_assigned', driverData);
+        await this.emit(`route:${routeId}`, 'pool_assignment_update', { poolId, driverId: driverData.id });
     }
 }
 
