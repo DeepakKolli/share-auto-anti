@@ -5,21 +5,21 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const assignmentRoutes = require('./routes/assignmentRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 3008;
+const PORT = process.env.PORT || 3009;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api', assignmentRoutes);
+app.use('/api', paymentRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {
-    res.json({ status: 'Driver Assignment Module is running', port: PORT });
+    res.json({ status: 'Payment Module is running', port: PORT });
 });
 
 // MongoDB Connection
@@ -28,7 +28,7 @@ mongoose.connect(MONGO_URI)
     .then(() => {
         console.log('Connected to MongoDB');
         app.listen(PORT, () => {
-            console.log(`Driver Assignment Module server running on port ${PORT}`);
+            console.log(`Payment Module server running on port ${PORT}`);
         });
     })
     .catch(err => {
