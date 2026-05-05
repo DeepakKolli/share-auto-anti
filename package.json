@@ -1,7 +1,7 @@
 {
-  "name": "module9-payment",
+  "name": "module10-admin-analytics",
   "version": "1.0.0",
-  "description": "Payment Module for Share Auto",
+  "description": "Admin & Analytics Module for Share Auto",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
