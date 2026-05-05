@@ -5,21 +5,23 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const paymentRoutes = require('./routes/paymentRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 3009;
+const PORT = process.env.PORT || 3010;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api', paymentRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {
-    res.json({ status: 'Payment Module is running', port: PORT });
+    res.json({ status: 'Admin & Analytics Module is running', port: PORT });
 });
 
 // MongoDB Connection
@@ -28,7 +30,7 @@ mongoose.connect(MONGO_URI)
     .then(() => {
         console.log('Connected to MongoDB');
         app.listen(PORT, () => {
-            console.log(`Payment Module server running on port ${PORT}`);
+            console.log(`Admin & Analytics Module running on port ${PORT}`);
         });
     })
     .catch(err => {
