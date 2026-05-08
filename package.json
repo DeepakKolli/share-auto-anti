@@ -1,15 +1,15 @@
 {
-  "name": "gateway",
+  "name": "share-auto-backend",
   "version": "1.0.0",
-  "main": "server.js",
+  "description": "Microservices backend for Share Auto",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js"
+    "start:all": "concurrently \"npm run start:gateway\" \"npm run start:services\"",
+    "start:gateway": "cd gateway && npm start",
+    "start:services": "concurrently \"cd services/user-service && npm start\" \"cd services/driver-service && npm start\" \"cd services/booking-service && npm start\" \"cd services/pricing-service && npm start\" \"cd services/pooling-service && npm start\" \"cd services/payment-service && npm start\" \"cd services/analytics-service && npm start\" \"cd services/notification-service && npm start\" \"cd services/route-service && npm start\" \"cd services/audit-service && npm start\"",
+    "install:all": "cd gateway && npm install && cd ../services && cd user-service && npm install && cd .. && cd driver-service && npm install && cd .. && cd booking-service && npm install && cd .. && cd pricing-service && npm install && cd .. && cd pooling-service && npm install && cd .. && cd payment-service && npm install && cd .. && cd analytics-service && npm install && cd .. && cd notification-service && npm install && cd .. && cd route-service && npm install && cd .. && cd audit-service && npm install && cd .."
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "http-proxy-middleware": "^2.0.6",
-    "cors": "^2.8.5",
-    "morgan": "^1.10.0",
-    "dotenv": "^16.3.1"
+    "concurrently": "^8.2.2"
   }
 }
