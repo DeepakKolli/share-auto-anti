@@ -1,0 +1,80 @@
+# Share Auto User Interface (UI) Master Plan
+
+Now that our backend API Gateway is functioning flawlessly, we need to design the physical interfaces that riders, drivers, and administrators will use to interact with the system. 
+
+Based on your requirement for a "clean" project with modern aesthetics, I am proposing a **Glassmorphism/Futuristic Dark Mode** theme across the board. 
+
+Here is a breakdown of the UI areas we need to create and the plan for each:
+
+```mermaid
+flowchart TD
+    %% Base Entry
+    WebApp([Share Auto Web App / Landing Page])
+
+    %% Perspectives Branching
+    WebApp -->|Login as Rider| RiderUI[Rider Perspective]
+    WebApp -->|Login as Driver| DriverUI[Driver Perspective]
+    WebApp -->|Login as Admin| AdminUI[Admin Perspective]
+
+    %% Rider Flow
+    RiderUI --> R1(Dashboard / Map)
+    R1 --> R2{Book a Ride?}
+    R2 -->|Yes| R3[Wait & Save Pricing UI]
+    R3 --> R4[Live Pooling Status UI]
+
+    %% Driver Flow
+    DriverUI --> D1(Driver Dashboard)
+    D1 --> D2{Toggle Online?}
+    D2 -->|Yes| D3[Waiting for Assignments UI]
+    D3 --> D4[Active Trip / Rider Manifest UI]
+
+    %% Admin Flow
+    AdminUI --> A1[System Analytics Dashboard]
+    A1 --> A2[Live Fleet Tracking Map]
+
+    %% Styling
+    classDef default fill:#1e1e2d,stroke:#a855f7,stroke-width:2px,color:#fff;
+    classDef rider fill:#3b82f6,stroke:#1e3a8a,stroke-width:2px,color:#fff,stroke-dasharray: 5 5;
+    classDef driver fill:#10b981,stroke:#064e3b,stroke-width:2px,color:#fff,stroke-dasharray: 5 5;
+    classDef admin fill:#f59e0b,stroke:#78350f,stroke-width:2px,color:#fff;
+    
+    class RiderUI,R1,R2,R3,R4 rider;
+    class DriverUI,D1,D2,D3,D4 driver;
+    class AdminUI,A1,A2 admin;
+```
+
+## 1. The Landing & Auth Area (Public Area)
+*The entry point for everyone.*
+
+- **Landing Page:** A premium, visually stunning hero page introducing "Share Auto".
+- **Authentication Pages:** Clean Login and Registration screens allowing users to select if they are logging in as a **Rider** or a **Driver**. This will interact directly with the Gateway's `/api/users` and `/api/drivers` endpoints.
+
+## 2. The User Portal (Rider App View)
+*Where customers book rides.*
+
+- **User Dashboard:** 
+  - A map/visual representation of their location.
+  - A booking card where they input `Source`, `Destination`, and `Seats`.
+- **Dynamic Pricing Screen:** Shows the user the calculated "Wait & Save" fare from the Pricing Service.
+- **Trip Status View (Pooling):** A real-time UI showing them waiting for their pool to fill up, and subsequently displaying their assigned driver once the pool is active.
+
+## 3. The Driver Portal (Driver App View)
+*Where drivers accept the work.*
+
+- **Driver Dashboard:** A massive toggle button to go "Online" or "Offline".
+- **Live Assignment View:** Real-time notifications pinging the driver when the Pooling Service assigns them a filled pool of riders.
+- **Active Trip View:** Shows a list of the 3-4 riders currently in their auto and a basic route overview.
+
+## 4. Admin Traffic Control (Optional / Future)
+*A birds-eye view for platform managers.*
+
+- **Analytics Dashboard:** A data-heavy table and chart view connecting to the `analytics-service` to show total revenue, active drivers, and active pools.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Technology Stack Choice:**
+> 1. Do you want this built purely in **HTML, Vanilla JS, and Vanilla CSS** for ultimate simplicity and control?
+> 2. Or would you prefer to initialize a modern framework like **React (Vite)** to handle the complex state management of real-time bookings?
+
+Let me know which tech stack you prefer, and if you want to start by building the **User Portal** or the **Driver Portal** first!
